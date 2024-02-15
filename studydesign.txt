@@ -1,4 +1,4 @@
-sample	sra_accession	group
+sample	sra_accession	groups
 HS01	SRR8668755	healthy
 HS02	SRR8668756	healthy
 HS03	SRR8668757	healthy
