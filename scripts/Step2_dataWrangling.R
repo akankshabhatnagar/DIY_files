@@ -16,7 +16,9 @@ library(matrixStats) # let's us easily calculate stats on rows or columns of a d
 library(cowplot) # allows you to combine multiple plots in one figure
 
 # Examine your data up to this point ----
-myTPM <- Txi_gene$abundance
+#abundance = TPM (based on transcripts, so column sums may not be exactly 1 million)
+#counts = total read counts for that gene
+myTPM <- Txi_gene$abundance 
 myCounts <- Txi_gene$counts
 colSums(myTPM)
 colSums(myCounts)
@@ -41,7 +43,8 @@ head(myTPM.stats)
 # produce a scatter plot of the transformed data
 ggplot(myTPM.stats) + 
   aes(x = SD, y = MED) +
-  geom_point(shape=25, size=3)
+  geom_point(shape=25, size=2)
+
 # Experiment with point shape and size in the plot above
 # Experiment with other plot types (e.g. 'geom_hex' instead of 'geom_point')
 # Add a theme to your ggplot code above.  Try 'theme_bw()'
@@ -62,6 +65,7 @@ ggplot(myTPM.stats) +
   theme_bw()
 
 # Make a DGElist from your counts, and plot ----
+#Always use raw counts reads and not TPM for edgeR or DESeq
 myDGEList <- DGEList(myCounts)
 # take a look at the DGEList object 
 myDGEList
@@ -73,13 +77,13 @@ load(file = "myDGEList")
 # use the 'cpm' function from EdgeR to get counts per million
 cpm <- cpm(myDGEList) 
 colSums(cpm)
-log2.cpm <- cpm(myDGEList, log=TRUE)
+log2.cpm <- cpm(myDGEList, log =TRUE)
 
 # 'coerce' your data matrix to a dataframe so that you can use tidyverse tools on it
 log2.cpm.df <- as_tibble(log2.cpm, rownames = "geneID")
 log2.cpm.df
 # add your sample names to this dataframe (we lost these when we read our data in with tximport)
-colnames(log2.cpm.df) <- c("geneID", sampleLabels)
+colnames(log2.cpm.df) <- c("geneID", targets$sample)
 # use the tidy package to 'pivot' your dataframe (from wide to long)
 log2.cpm.df.pivot <- pivot_longer(log2.cpm.df, # dataframe to be pivoted
                                   cols = HS01:CL13, # column names to be stored as a SINGLE variable
@@ -89,7 +93,7 @@ log2.cpm.df.pivot <- pivot_longer(log2.cpm.df, # dataframe to be pivoted
 # let's look at the impact of pivoting the data
 log2.cpm.df.pivot
 
-# not it is easy to plot this pivoted data
+# now it is easy to plot this pivoted data
 ggplot(log2.cpm.df.pivot) +
   aes(x=samples, y=expression, fill=samples) +
   geom_violin(trim = FALSE, show.legend = FALSE) +
